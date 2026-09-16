@@ -14,6 +14,7 @@ jobs:
       - name: Unzip Source Code
         run: |
           unzip -o "*.zip" -d . || echo "No zip file found"
+          ls -R
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -21,11 +22,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Make gradlew executable
-        run: chmod +x gradlew || true
-
-      - name: Build Release APK
-        run: ./gradlew bundleRelease || ./gradlew assembleRelease --no-daemon
+      - name: Find and Build APK
+        run: |
+          # Find where gradlew is located and run it
+          GRADLEW_PATH=$(find . -name "gradlew" -type f | head -n 1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "gradlew not found!"
+            exit 1
+          fi
+          DIR_PATH=$(dirname "$GRADLEW_PATH")
+          echo "Found gradlew in: $DIR_PATH"
+          cd "$DIR_PATH"
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
