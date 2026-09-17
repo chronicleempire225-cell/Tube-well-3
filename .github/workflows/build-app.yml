@@ -33,23 +33,22 @@ jobs:
           echo "No root zip file found."
         fi
 
-    - name: Build APK using System Gradle
+    - name: Clean and Build APK Safely
       run: |
         echo "Locating project directory..."
-        # सही प्रोजेक्ट फोल्डर ढूंढना जहाँ AndroidManifest.xml या build.gradle हो
         PROJECT_DIR=$(find . -name "build.gradle" -o -name "build.gradle.kts" | head -n 1 | xargs dirname)
         
         if [ -n "$PROJECT_DIR" ]; then
           echo "Found project directory at: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           
-          # अगर gradlew काम नहीं कर रहा, तो सीधे सिस्टम ग्रैडल या gradle build चलाएंगे
           if [ -f "gradlew" ]; then
             chmod +x gradlew
-            ./gradlew assembleDebug --stacktrace
+            # क्लीन करके सीधे असेंबल डीबग चलाएंगे ताकि एरर हट जाए
+            ./gradlew clean assembleDebug --no-daemon
           else
-            echo "gradlew not found, using system gradle or fallback..."
-            gradle assembleDebug || ./gradlew assembleDebug || true
+            echo "gradlew not found, using system gradle..."
+            gradle clean assembleDebug --no-daemon || true
           fi
         else
           echo "Project directory not found!"
