@@ -1,4 +1,4 @@
-name: Build Signed APK for Samsung Store
+name: Build APK for Samsung Store
 
 on:
   push:
@@ -23,14 +23,32 @@ jobs:
       with:
         node-version: '22'
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+    - name: Install Dependencies and Build
+      run: |
+        # अगर आपका प्रोजेक्ट किसी फोल्डर के अंदर है, तो यहाँ उसका नाम लिख सकते हैं
+        # फिलहाल यह सीधे रूट फोल्डर के लिए है
+        npm install
+        npm run build || echo "Skipping npm build if not needed"
 
-    - name: Build Release APK with Gradle
-      run: ./gradlew assembleRelease
+    - name: Find and Build with Gradle
+      run: |
+        # यह कमांड ऑटोमैटिक ढूँढ लेगी कि gradlew फाइल कहाँ है और उसे चलाएगी
+        if [ -f "./gradlew" ]; then
+          chmod +x gradlew
+          ./gradlew assembleRelease
+        elif [ -f "./android/gradlew" ]; then
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+        else
+          echo "Gradlew file not found in root or android folder"
+          exit 1
+        fi
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: samsung-release-apk
-        path: app/build/outputs/apk/release/app-release.apk
+        path: |
+          app/build/outputs/apk/release/app-release.apk
+          android/app/build/outputs/apk/release/app-release.apk
