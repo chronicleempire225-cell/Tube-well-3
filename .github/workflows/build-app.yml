@@ -13,19 +13,18 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Set up Node.js 20
+    - name: Set up Node.js 22
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-      # यदि आपकी gradlew फाइल किसी फोल्डर के अंदर है, तो यहाँ उसका नाम दें, जैसे: working-directory: ./android
 
     - name: Build Release APK with Gradle
       run: ./gradlew assembleRelease
