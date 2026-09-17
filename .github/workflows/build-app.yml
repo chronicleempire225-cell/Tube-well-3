@@ -25,12 +25,14 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+      working-directory: ./android   # अगर आपकी फाइलें किसी फोल्डर में हैं, तो यहाँ उसका नाम लिखें (जैसे ./android या ./my-app)
 
     - name: Build Release APK with Gradle
       run: ./gradlew assembleRelease
+      working-directory: ./android   # वही फोल्डर का नाम यहाँ भी देना होगा
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: samsung-release-apk
-        path: app/build/outputs/apk/release/app-release.apk
+        path: android/app/build/outputs/apk/release/app-release.apk   # अगर फोल्डर के अंदर है तो आगे फोल्डर का नाम जुड़ जाएगा
