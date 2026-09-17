@@ -3,6 +3,7 @@ name: Smart Build APK for Samsung Store
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,37 +19,46 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Check and Setup Android Build Environment
+    - name: Find Zip and Extract Automatically
       run: |
-        echo "Checking current directory structure:"
+        echo "Searching for uploaded ZIP files..."
         ls -la
 
-        # अगर gradlew फाइल मौजूद नहीं है, तो उसे ऑटोमेटिक बनाएँ या सेट करें
-        if [ ! -f "gradlew" ] && [ ! -f "android/gradlew" ]; then
-          echo "Gradlew not found. Creating a basic gradle structure..."
-          
-          # अगर build.gradle भी नहीं है, तो बेसिक फाइलें तैयार करना
-          if [ ! -f "build.gradle" ] && [ ! -f "app/build.gradle" ]; then
-            echo "Creating basic build.gradle files for the project..."
-            mkdir -p app/src/main
-          fi
-          
-          # ग्रैडल रैपर की कमी को दूर करने के लिए ग्रेडलबिल्ड इनिशियलाइज करना
-          gradle wrapper || true
+        ZIP_FILE=$(find . -maxdepth 1 -name "*.zip" | head -n 1)
+        
+        if [ -n "$ZIP_FILE" ]; then
+          echo "Found zip file: $ZIP_FILE. Extracting..."
+          unzip -o "$ZIP_FILE" -d extracted_project
+          cd extracted_project
+          ls -la
+        else
+          echo "No root zip file found, checking current structure..."
         fi
 
-        # अब चेक करके बिल्ड चलाना
-        if [ -f "./gradlew" ]; then
+    - name: Build APK with Gradle
+      run: |
+        if [ -f "gradlew" ]; then
           chmod +x gradlew
-          ./gradlew assembleDebug || ./gradlew build || echo "Build command tried but skipped due to structure"
+          ./gradlew assembleDebug
+        elif [ -f "extracted_project/gradlew" ]; then
+          cd extracted_project
+          chmod +x gradlew
+          ./gradlew assembleDebug
         elif [ -f "android/gradlew" ]; then
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug || ./gradlew build || echo "Build command tried in android folder"
+          ./gradlew assembleDebug
         else
-          echo "Structure is purely raw code. Packaging into a debug APK format..."
-          mkdir -p build/outputs/apk/debug/
-          # यहाँ हम यह सुनिश्चित कर रहे हैं कि अगर कोड सिर्फ एआई स्टूडियो का रॉ कोड है तो कम से कम जॉब पास हो
+          echo "Looking deeper for gradlew..."
+          FIND_GRADLEW=$(find . -name "gradlew" | head -n 1)
+          if [ -n "$FIND_GRADLEW" ]; then
+            DIR_NAME=$(dirname "$FIND_GRADLEW")
+            cd "$DIR_NAME"
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            echo "Gradlew wrapper still not found, checking build files..."
+          fi
         fi
 
     - name: Upload APK Artifact
