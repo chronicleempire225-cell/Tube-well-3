@@ -42,36 +42,32 @@ jobs:
       id: locate_project
       run: |
         cd extracted_project
-        # Find directory containing build.gradle or build.gradle.kts
         PROJECT_DIR=$(find . -maxdepth 2 -name "build.gradle*" -exec dirname {} \; | head -n 1)
         
         if [ -z "$PROJECT_DIR" ]; then
           echo "Error: Could not find build.gradle in the extracted files!"
           exit 1
-        fi
+        end
         
-        # Get absolute path
         ABS_PATH=$(realpath "$PROJECT_DIR")
         echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
         echo "Found project at: $ABS_PATH"
 
-    - name: Build APK with Gradle
+    - name: Build Bundle (AAB) for Play Store
       run: |
         cd "${{ steps.locate_project.outputs.project_path }}"
         
-        # Make gradlew executable
         if [ -f "gradlew" ]; then
           chmod +x gradlew
-          ./assembleRelease
+          ./bundleRelease
         else
-          echo "gradlew not found, trying gradle wrapper or standard build..."
-          gradle assembleRelease
+          gradle bundleRelease
         fi
 
-    - name: Upload Build Artifact (APK)
+    - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: app-release-apk
+        name: play-store-bundle
         path: |
-          **/build/outputs/apk/**/*.apk
           **/build/outputs/bundle/**/*.aab
+          **/build/outputs/apk/**/*.apk
