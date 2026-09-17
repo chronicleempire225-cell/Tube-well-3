@@ -1,4 +1,4 @@
-name: Build APK for Samsung Store
+name: Build APK from Zip Structure
 
 on:
   push:
@@ -18,19 +18,22 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Find and Build with Gradle
+    - name: Locate and Build inside Zip Folder
       run: |
-        echo "Searching for gradle wrapper..."
-        if [ -f "./gradlew" ]; then
-          chmod +x gradlew
-          ./gradlew assembleDebug
-        elif [ -f "android/gradlew" ]; then
-          cd android
+        echo "Searching where gradlew is hidden inside the uploaded files..."
+        find . -name "gradlew" -maxdepth 4
+        
+        # ऑटोमैटिक ढूंढकर वहीं से बिल्ड चलाना
+        GRADLE_PATH=$(find . -name "gradlew" -maxdepth 4 | head -n 1)
+        if [ ! -z "$GRADLE_PATH" ]; then
+          DIR_NAME=$(dirname "$GRADLE_PATH")
+          echo "Found gradlew in: $DIR_NAME"
+          cd "$DIR_NAME"
           chmod +x gradlew
           ./gradlew assembleDebug
         else
-          echo "No gradlew found, listing directory structure:"
-          find . -name "gradlew"
+          echo "Error: gradlew not found anywhere in the uploaded zip structure."
+          exit 1
         fi
 
     - name: Upload APK Artifact
