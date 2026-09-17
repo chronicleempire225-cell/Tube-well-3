@@ -25,6 +25,7 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+      # यदि आपकी gradlew फाइल किसी फोल्डर के अंदर है, तो यहाँ उसका नाम दें, जैसे: working-directory: ./android
 
     - name: Build Release APK with Gradle
       run: ./gradlew assembleRelease
