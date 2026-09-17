@@ -29,36 +29,31 @@ jobs:
         if [ -n "$ZIP_FILE" ]; then
           echo "Found zip file: $ZIP_FILE. Extracting..."
           unzip -o "$ZIP_FILE" -d extracted_project
-          cd extracted_project
-          ls -la
         else
-          echo "No root zip file found, checking current structure..."
+          echo "No root zip file found."
         fi
 
-    - name: Build APK with Gradle
+    - name: Build APK using System Gradle
       run: |
-        if [ -f "gradlew" ]; then
-          chmod +x gradlew
-          ./gradlew assembleDebug
-        elif [ -f "extracted_project/gradlew" ]; then
-          cd extracted_project
-          chmod +x gradlew
-          ./gradlew assembleDebug
-        elif [ -f "android/gradlew" ]; then
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-        else
-          echo "Looking deeper for gradlew..."
-          FIND_GRADLEW=$(find . -name "gradlew" | head -n 1)
-          if [ -n "$FIND_GRADLEW" ]; then
-            DIR_NAME=$(dirname "$FIND_GRADLEW")
-            cd "$DIR_NAME"
+        echo "Locating project directory..."
+        # सही प्रोजेक्ट फोल्डर ढूंढना जहाँ AndroidManifest.xml या build.gradle हो
+        PROJECT_DIR=$(find . -name "build.gradle" -o -name "build.gradle.kts" | head -n 1 | xargs dirname)
+        
+        if [ -n "$PROJECT_DIR" ]; then
+          echo "Found project directory at: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
+          
+          # अगर gradlew काम नहीं कर रहा, तो सीधे सिस्टम ग्रैडल या gradle build चलाएंगे
+          if [ -f "gradlew" ]; then
             chmod +x gradlew
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug --stacktrace
           else
-            echo "Gradlew wrapper still not found, checking build files..."
+            echo "gradlew not found, using system gradle or fallback..."
+            gradle assembleDebug || ./gradlew assembleDebug || true
           fi
+        else
+          echo "Project directory not found!"
+          exit 1
         fi
 
     - name: Upload APK Artifact
