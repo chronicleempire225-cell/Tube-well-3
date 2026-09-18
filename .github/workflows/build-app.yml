@@ -42,32 +42,33 @@ jobs:
       id: locate_project
       run: |
         cd extracted_project
-        PROJECT_DIR=$(find . -maxdepth 2 -name "build.gradle*" -exec dirname {} \; | head -n 1)
+        # Root level ya andar jahan bhi build.gradle hai use dhoondho
+        PROJECT_DIR=$(find . -maxdepth 3 -name "build.gradle*" -not -path "*/.*" -exec dirname {} \; | head -n 1)
         
         if [ -z "$PROJECT_DIR" ]; then
           echo "Error: Could not find build.gradle in the extracted files!"
           exit 1
-        end
+        fi
         
         ABS_PATH=$(realpath "$PROJECT_DIR")
         echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
         echo "Found project at: $ABS_PATH"
 
-    - name: Build Bundle (AAB) for Play Store
+    - name: Build Android App Bundle (AAB) for Play Store
       run: |
         cd "${{ steps.locate_project.outputs.project_path }}"
         
         if [ -f "gradlew" ]; then
           chmod +x gradlew
-          ./bundleRelease
+          ./gradlew bundleRelease --no-daemon
         else
-          gradle bundleRelease
+          gradle bundleRelease --no-daemon
         fi
 
-    - name: Upload Build Artifact
+    - name: Upload Play Store Bundle Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: play-store-bundle
+        name: play-store-release-bundle
         path: |
           **/build/outputs/bundle/**/*.aab
           **/build/outputs/apk/**/*.apk
