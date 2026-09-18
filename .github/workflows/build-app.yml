@@ -42,7 +42,6 @@ jobs:
       id: locate_project
       run: |
         cd extracted_project
-        # Root level ya andar jahan bhi build.gradle hai use dhoondho
         PROJECT_DIR=$(find . -maxdepth 3 -name "build.gradle*" -not -path "*/.*" -exec dirname {} \; | head -n 1)
         
         if [ -z "$PROJECT_DIR" ]; then
@@ -54,21 +53,20 @@ jobs:
         echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
         echo "Found project at: $ABS_PATH"
 
-    - name: Build Android App Bundle (AAB) for Play Store
+    - name: Build Android App (Debug/Universal)
       run: |
         cd "${{ steps.locate_project.outputs.project_path }}"
         
         if [ -f "gradlew" ]; then
           chmod +x gradlew
-          ./gradlew bundleRelease --no-daemon
+          ./gradlew assembleDebug --no-daemon
         else
-          gradle bundleRelease --no-daemon
+          gradle assembleDebug --no-daemon
         fi
 
-    - name: Upload Play Store Bundle Artifact
+    - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: play-store-release-bundle
+        name: app-debug-apk
         path: |
-          **/build/outputs/bundle/**/*.aab
           **/build/outputs/apk/**/*.apk
