@@ -13,11 +13,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '21'
 
     - name: Find Zip and Extract Automatically
       run: |
@@ -53,15 +53,15 @@ jobs:
         echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
         echo "Found project at: $ABS_PATH"
 
-    - name: Build Android App (Debug/Universal)
+    - name: Clean and Build Debug APK
       run: |
         cd "${{ steps.locate_project.outputs.project_path }}"
         
         if [ -f "gradlew" ]; then
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew clean assembleDebug --no-daemon
         else
-          gradle assembleDebug --no-daemon
+          gradle clean assembleDebug --no-daemon
         fi
 
     - name: Upload Build Artifact
