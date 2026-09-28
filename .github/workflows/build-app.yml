@@ -1,4 +1,4 @@
-name: Build Android App for Play Store
+Name: Build Android App for Play Store
 
 on:
   push:
@@ -39,7 +39,7 @@ jobs:
         ABS_PATH=$(realpath "$PROJECT_DIR")
         echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
 
-    - name: Force Headless Mode & Build APK
+    - name: Force Headless Mode & Build App Bundle
       run: |
         cd "${{ steps.locate_project.outputs.project_path }}"
         
@@ -48,14 +48,14 @@ jobs:
         
         if [ -f "gradlew" ]; then
           chmod +x gradlew
-          ./gradlew clean assembleDebug --stacktrace --no-configuration-cache
+          ./gradlew clean bundleRelease --stacktrace --no-configuration-cache
         else
-          gradle clean assembleDebug --stacktrace --no-configuration-cache
+          gradle clean bundleRelease --stacktrace --no-configuration-cache
         fi
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug-apk
+        name: app-release-bundle
         path: |
-          **/build/outputs/apk/**/*.apk
+          **/build/outputs/bundle/**/*.aab
