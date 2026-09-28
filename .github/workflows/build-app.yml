@@ -34,7 +34,8 @@ jobs:
         id: locate_project
         run: |
           cd extracted_project
-          PROJECT_DIR=$(find . -maxdepth 3 -name "build.gradle*" -not -path "*/.*" | head -n 1)
+          # यह कमांड सुनिश्चित करेगी कि सही build.gradle या build.gradle.kts वाली मुख्य डायरेक्टरी मिल जाए
+          PROJECT_DIR=$(find . -name "build.gradle*" -not -path "*/.*" -exec dirname {} \; | head -n 1)
           ABS_PATH=$(realpath "$PROJECT_DIR")
           echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
 
@@ -57,4 +58,3 @@ jobs:
           name: app-release-bundle
           path: |
             **/build/outputs/bundle/**/*.aab
-            
