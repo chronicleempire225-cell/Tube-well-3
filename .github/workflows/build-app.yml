@@ -1,4 +1,4 @@
-Name: Build Android App for Play Store
+name: Build Android App for Play Store
 
 on:
   push:
@@ -59,3 +59,4 @@ jobs:
         name: app-release-bundle
         path: |
           **/build/outputs/bundle/**/*.aab
+          
