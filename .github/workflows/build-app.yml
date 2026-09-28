@@ -34,12 +34,15 @@ jobs:
         id: locate_project
         run: |
           cd extracted_project
-          # यह कमांड सुनिश्चित करेगी कि सही build.gradle या build.gradle.kts वाली मुख्य डायरेक्टरी मिल जाए
-          PROJECT_DIR=$(find . -name "build.gradle*" -not -path "*/.*" -exec dirname {} \; | head -n 1)
+          PROJECT_DIR=$(find . -maxdepth 3 -name "build.gradle*" -not -path "*/.*" | head -n 1)
           ABS_PATH=$(realpath "$PROJECT_DIR")
           echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
 
       - name: Force Headless Mode & Build App Bundle
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd "${{ steps.locate_project.outputs.project_path }}"
           
@@ -47,9 +50,19 @@ jobs:
 
           if [ -f "gradlew" ]; then
             chmod +x gradlew
-            ./gradlew clean bundleRelease --stacktrace --no-configuration-cache
+            ./gradlew clean bundleRelease \
+              -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/my-android-keystore \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD" \
+              --stacktrace --no-configuration-cache
           else
-            gradle clean bundleRelease --stacktrace --no-configuration-cache
+            gradle clean bundleRelease \
+              -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/my-android-keystore \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASSWORD" \
+              --stacktrace --no-configuration-cache
           fi
 
       - name: Upload Build Artifact
@@ -58,3 +71,4 @@ jobs:
           name: app-release-bundle
           path: |
             **/build/outputs/bundle/**/*.aab
+            
