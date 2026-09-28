@@ -34,7 +34,7 @@ jobs:
         id: locate_project
         run: |
           cd extracted_project
-          PROJECT_DIR=$(find . -maxdepth 3 -name "build.gradle*" -not path "*/.*")
+          PROJECT_DIR=$(find . -maxdepth 3 -name "build.gradle*" -not -path "*/.*")
           ABS_PATH=$(realpath "$PROJECT_DIR")
           echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
 
@@ -58,4 +58,3 @@ jobs:
           name: app-release-bundle
           path: |
             **/build/outputs/bundle/**/*.aab
-            
