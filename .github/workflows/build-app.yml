@@ -51,14 +51,14 @@ jobs:
           if [ -f "gradlew" ]; then
             chmod +x gradlew
             ./gradlew clean bundleRelease \
-              -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/my-android-keystore \
+              -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/generate-keystore/your-keystore-file.jks \
               -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
               -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
               -Pandroid.injected.signing.key.password="$KEY_PASSWORD" \
               --stacktrace --no-configuration-cache
           else
             gradle clean bundleRelease \
-              -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/my-android-keystore \
+              -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/generate-keystore/your-keystore-file.jks \
               -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
               -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
               -Pandroid.injected.signing.key.password="$KEY_PASSWORD" \
