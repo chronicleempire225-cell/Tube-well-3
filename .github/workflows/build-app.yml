@@ -34,7 +34,7 @@ jobs:
         id: locate_project
         run: |
           cd extracted_project
-          PROJECT_DIR=$(find . -maxdepth 3 -name "build.gradle*" -not -path "*/.*")
+          PROJECT_DIR=$(find . -maxdepth 3 -name "build.gradle*" -not -path "*/.*" | head -n 1)
           ABS_PATH=$(realpath "$PROJECT_DIR")
           echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
 
@@ -42,7 +42,6 @@ jobs:
         run: |
           cd "${{ steps.locate_project.outputs.project_path }}"
           
-          # gradle को हमेशा घर और प्रोजेक्ट के संदर्भ में चलाएं
           echo "org.gradle.jvmargs=-Xmx2048m -Djava.awt.headless=true" >> gradle.properties
 
           if [ -f "gradlew" ]; then
@@ -58,3 +57,4 @@ jobs:
           name: app-release-bundle
           path: |
             **/build/outputs/bundle/**/*.aab
+            
