@@ -1,6 +1,8 @@
 name: Build Android App for Play Store
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -21,7 +23,7 @@ jobs:
 
       - name: Find Zip and Extract
         run: |
-          ZIP_FILE=$(find . -maxdepth 1 -name "*.zip" -head -n 1)
+          ZIP_FILE=$(find . -maxdepth 1 -name "*.zip" | head -n 1)
           if [ -z "$ZIP_FILE" ]; then
             echo "Error: No ZIP file found!"
             exit 1
@@ -35,7 +37,6 @@ jobs:
 
       - name: Locate Project Root
         run: |
-          # yeh nirikshan karega ki project ki jड़ kahan par hai
           PROJECT_FILE=$(find extracted_project -name "build.gradle" -not -path "*/build/*" -print -quit)
           PROJECT_DIR=$(dirname "$PROJECT_FILE")
           ABS_PATH=$(realpath "$PROJECT_DIR")
