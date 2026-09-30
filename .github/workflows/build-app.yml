@@ -38,8 +38,13 @@ jobs:
       - name: Locate Project Root
         id: locate_project
         run: |
-          PROJECT_FILE=$(find extracted_project -name "build.gradle" -not -path "*/build/*" -print -quit)
-          PROJECT_DIR=$(dirname "$PROJECT_FILE")
+          # Yeh script direct gradlew file ko dhoond legi aur uska folder set kar degi
+          GRADLEW_FILE=$(find extracted_project -name "gradlew" -print -quit)
+          if [ -z "$GRADLEW_FILE" ]; then
+            echo "Error: gradlew not found!"
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$GRADLEW_FILE")
           ABS_PATH=$(realpath "$PROJECT_DIR")
           echo "project_path=$ABS_PATH" >> $GITHUB_OUTPUT
 
