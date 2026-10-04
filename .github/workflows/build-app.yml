@@ -25,14 +25,14 @@ jobs:
 
       - name: Find Latest Zip and Extract
         run: |
-          ZIP_FILE=$(find . -maxdepth 2 -type f -name "*.zip" -printf '%T@ %p\n' | sort -n | tail -1 | awk '{print $2}')
+          ZIP_FILE=$(find . -maxdepth 2 -type f -name "*.zip" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
           if [ -z "$ZIP_FILE" ]; then
             echo "ERROR: No zip file found in root or subfolders."
             exit 1
           fi
           echo "Selected latest ZIP file: $ZIP_FILE"
           echo "Extracting $ZIP_FILE..."
-          unzip -q "$ZIP_FILE" -d extracted_project
+          unzip -q -o "$ZIP_FILE" -d extracted_project
 
       - name: Locate Project Root & Build App Bundle
         run: |
