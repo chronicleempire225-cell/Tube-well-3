@@ -25,7 +25,6 @@ jobs:
 
       - name: Find Latest Zip and Extract
         run: |
-          # सबसे नई (latest) zip फाइल ढूंढें
           ZIP_FILE=$(find . -maxdepth 2 -name "*.zip" -printf "%T@ %p\n" | sort -nr | head -n 1 | cut -d' ' -f2-)
           if [ -z "$ZIP_FILE" ]; then
             echo "Error: No ZIP file found in root or subfolders."
@@ -37,7 +36,6 @@ jobs:
 
       - name: Locate Project Root & Build App Bundle
         run: |
-          # Gradlew फाइल को ढूंढें
           GRADLEW_PATH=$(find extracted_project -name "gradlew" | head -n 1)
           if [ -z "$GRADLEW_PATH" ]; then
             echo "Error: gradlew script not found inside extracted files."
@@ -48,9 +46,8 @@ jobs:
           echo "Project directory found at: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           
-          # Executable अनुमति दें और App Bundle बनाएं
           chmod +x gradlew
-          ./gradlew bundleRelease --no-daemon
+          ./gradlew bundleRelease -Djava.awt.headless=true --no-daemon
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
